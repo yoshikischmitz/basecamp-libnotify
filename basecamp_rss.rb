@@ -45,12 +45,15 @@ def send_notification(item)
 
   notification_title = parse_xml(current_item_title).content
   notification_text = parse_xml(current_item_text).content
-  system("notify-send -i ~/Coding/image.gif '#{notification_title}' '#{notification_text}'")
+	curr_dir = File.expand_path(File.dirname(__FILE__))
+	system("notify-send -i #{curr_dir}/image.gif '#{notification_title}' '#{notification_text}'")
 end
 
-feed_url = ''
 config_file= "config"
 config_info = File.open(config_file).read.split("\n")
+user_and_pass = config_info[0..1]
+feed_url = config_info[2]
+accesses_link = config_info[3]
 
 loop do
   open(feed_url, http_basic_authentication: user_and_pass) do |rss|
@@ -59,7 +62,7 @@ loop do
       archive = File.open("archive", "a+")
       item_id = parse_xml(item.to_s).css("id").first.content
       person = parse_xml(item.to_s).css("name").first.content
-      find_profile_image(person, user_and_pass)
+      find_profile_image(accesses_link, person, user_and_pass)
       send_notification(item) unless item_in_archive?(item_id, archive)
     end
   end
